@@ -7,28 +7,36 @@ class CustomerSuccessBalancing
     @customer_success_away = customer_success_away
   end
 
-  # Returns the id of the CustomerSuccess with the most customers
   def execute
-    active_css = @customer_success.delete_if do |css|
-      @customer_success_away.include?(css[:id])
-    end
+    @active_css = @customer_success.reject { |css| @customer_success_away.include?(css[:id]) }
 
-    @customer_scores = @customers.map { |customer| customer[:score] }
-    @css_scores = active_css.map { |css| css[:score] }.sort!
+    @customer_scores = @customers.map { |customer| customer[:score] }.sort!
+    @css_scores = @active_css.map { |css| css[:score] }.sort!
 
     combined_customers = {}
+    customer_sizes = @customer_scores
 
-    @customer_scores.each do |customer_score|
-      @css_scores.each do |cs_score|
-        if customer_score <= cs_score
-          combined_customers[cs_score] ||= []
-          combined_customers[cs_score] << customer_score
+    @css_scores.each do |cs_score|
+      customers = []
+      last_index = -1
+
+      break if customer_sizes.empty?
+
+      customer_sizes.each_with_index do |customer_size, index|
+        if customer_size <= cs_score
+          customers << customer_size
+          last_index = index
+        else
           break
         end
       end
+
+      customer_sizes = customer_sizes[(last_index + 1)..-1]
+
+      combined_customers[cs_score] = customers unless customers.empty?
     end
 
-    busiest_css = combined_customers.max_by(2) { |set| set.size }
+    busiest_css = combined_customers.sort_by { |set| set.size }
 
     if busiest_css.empty?
       0
@@ -36,13 +44,13 @@ class CustomerSuccessBalancing
       0
     else
       busiest_cs_score = busiest_css[0][0]
-      busiest_cs = active_css.select { |cs| cs[:score] == busiest_cs_score }
+      busiest_cs = @active_css.select { |cs| cs[:score] == busiest_cs_score }
       busiest_cs[0][:id]
     end
   end
 end
 
-class CustomerSuccessBalancingTests < Minitest::Test
+class TestCustomerSuccessBalancing < Minitest::Test
   def test_scenario_one
     css = [{ id: 1, score: 60 }, { id: 2, score: 20 }, { id: 3, score: 95 }, { id: 4, score: 75 }]
     customers = [{ id: 1, score: 90 }, { id: 2, score: 20 }, { id: 3, score: 70 }, { id: 4, score: 40 }, { id: 5, score: 60 }, { id: 6, score: 10}]
@@ -64,7 +72,7 @@ class CustomerSuccessBalancingTests < Minitest::Test
 
     balancer = CustomerSuccessBalancing.new(array_to_map(customer_success), array_to_map(customers), [999])
 
-    result = Timeout.timeout(1.0) { balancer.execute }
+    result = Timeout.timeout(0.01) { balancer.execute }
     assert_equal 998, result
   end
 
