@@ -1,5 +1,7 @@
 # CustomerSuccess Balancing
 
+Para ver detalhes sobre a solução, clique [aqui](#sobre-a-solução)! 
+
 
 Este desafio consiste em um sistema de balanceamento entre clientes e Customer Success (CSs). Os CSs são os Gerentes de Sucesso, são responsáveis pelo acompanhamento estratégico dos clientes.
 
@@ -57,3 +59,50 @@ Para este exemplo o retorno deve ser `1`, que é o id do CS que atende 4 cliente
 ```
 1
 ```
+
+## Sobre a solução
+
+Para resolver o exercício, implementei um algoritmo que atribui um grupo de clientes ao CS mais experiente para atendê-lo, de acordo com as premissas do desafio e seguindo os seguintes passos: 
+
+**1. Gerar um array com os CSs ativos.**
+ Subtraindo os CSs indisponíveis da lista de CSs.
+
+**2. Iterar pela lista de CSs ativos para atribuir todos os Customers ao CS mais experiente para atendê-lo naquele grupo.**
+ Cada vez que um grupo de Customers é associado ao CS que irá atendê-lo, estes Customers são excluídos do array de Customers que podem ser distribuídos a outros CSs. 
+ Desta forma, cada CS só irá iterar sobre os Customers que ainda estão sem atendimento, tornando o algoritmo mais performático.
+
+**3. Identificar o CS com o maior número de Customers**
+ Partindo de uma seleção dos dois CSs com o maior número de Customers, checar se houve empate, ou se nenhum CS era experiente o suficiente para atender o grupo de Customers (casos em que retornamos 0) ou, caso contrário, retornar o ID do CS que está atendendo mais Customers.
+
+### Como executar o código
+
+Para executar o código localmente, você deve instalar a linguagem [Ruby versão 2.7.2](https://www.ruby-lang.org/pt/) e seguir as instruções abaixo:
+
+Clone este repositório
+```bash
+git clone https://github.com/JuliaJubileu/developer-challenge-rd
+```
+
+Abra o diretório pelo terminal
+
+```bash
+cd developer-challenge-rd
+```
+
+Caso não tenha a gem **minitest** instalada, rode o comando abaixo
+
+```bash
+gem install minitest
+```
+
+Execute os testes, rodando o seguinte comando no terminal
+
+```bash
+ruby customer_success_balancing.rb
+```
+
+### Possíveis melhorias
+
+Quando o programa recebe inputs em desacordo com as premissas estabelecidas no desafio, nenhum erro é levantado. Por isso, pode ser desenvolvido um sistema de exceções que torne o programa mais preparado para erros. Considerando a instrução de näo editar os testes existentes, decidi não implementar este sistema no momento, pois quebraria o teste 5 (Este teste inclui dois CSs com mesmo nível).
+
+Além disso, seria interessante estudar outras soluções que tornem o código mais versátil. Possibilitando, por exemplo, obter os IDs dos CSs com menos Customers, no caso de uma mudança no escopo.
